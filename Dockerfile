@@ -1,12 +1,12 @@
-FROM    node:18-alpine
+FROM  node:18-alpine
 
-ENV VERSION=develop
+ENV VERSION=main
 
 WORKDIR /usr/src/ylt
 
 RUN apk upgrade --update && apk --no-cache add git gcc make g++ zlib-dev libjpeg-turbo-dev nasm automake autoconf libtool \
   && git clone https://github.com/YellowLabTools/YellowLabTools-server.git -b ${VERSION} . \
-  &&  NODE_ENV=development && npm install jpegoptim-bin --unsafe-perm=true --allow-root --legacy-peer-deps --omit=dev \
+  && NODE_ENV=production && export CPPFLAGS="-DPNG_ARM_NEON_OPT=0" && npm install --unsafe-perm=true --allow-root --legacy-peer-deps --omit=dev \
   && echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories \
   && echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
   && echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
@@ -25,6 +25,9 @@ RUN apk upgrade --update && apk --no-cache add git gcc make g++ zlib-dev libjpeg
 
 # Create the results directory and assign nobody:nogroup as the owner
 RUN mkdir -p /usr/src/ylt/results && chown -R nobody:nogroup /usr/src/ylt/results
+
+# Create the directory for the screenshots and assign nobody:nogroup as the owner
+RUN mkdir -p /usr/src/ylt/tmp && chown -R nobody:nogroup /usr/src/ylt/tmp
 
 # Add the volume for results
 VOLUME /usr/src/ylt/results
